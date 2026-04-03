@@ -47,6 +47,10 @@ SQL result visualization is governed by:
 - SQL result grid MUST keep column pinning enabled and URL-backed using existing `pin` navigation state.
 - SQL execution MUST remain cancellable via `AbortController`.
 - SQL editor lines MUST soft-wrap within the available editor width instead of forcing page-level horizontal overflow while typing long queries.
+- The SQL toolbar MUST include a persistent **Read-only mode** toggle that is persisted through `sqlEditorStateCollection` using key `sql-editor:read-only`.
+  - When read-only mode is active, any SQL statement whose leading keyword is a write operation (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE, MERGE, REPLACE, UPSERT) MUST be blocked before dispatching to the adapter. An inline error message MUST be shown instead.
+  - SELECT queries and other read-only operations MUST NOT be affected by the toggle.
+  - Write-operation detection is performed by `isSqlWriteOperation` from `sql-guardrails.ts`.
 
 ## Result Rendering Contract
 
@@ -97,3 +101,7 @@ Changes to SQL view MUST include tests for:
 - read-only grid rendering (pin control present, sorting controls disabled)
 - absence of history UI
 - absence of pagination controls in SQL result grid
+- read-only mode toggle presence in the toolbar
+- read-only mode blocking write SQL with an inline error
+- read-only mode allowing SELECT queries to execute normally
+- read-only mode toggle state persisting through `sqlEditorStateCollection`

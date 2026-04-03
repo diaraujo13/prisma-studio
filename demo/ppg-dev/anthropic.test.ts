@@ -6,7 +6,9 @@ import {
   runAnthropicLlmRequest,
 } from "./anthropic";
 
-type FetchLike = (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>;
+type FetchLike = (
+  ...args: Parameters<typeof fetch>
+) => ReturnType<typeof fetch>;
 
 describe("runAnthropicLlmRequest", () => {
   it("calls Anthropic's Messages API directly and returns the first text block", async () => {

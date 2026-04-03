@@ -12,13 +12,11 @@ export function useSorting() {
     sortParam,
     setSortParam,
   } = useNavigation();
-  const {
-    value: effectiveSortParam,
-    writeLatestValue: writeLatestSortParam,
-  } = useLatestAsyncParam({
-    value: sortParam,
-    write: setSortParam,
-  });
+  const { value: effectiveSortParam, writeLatestValue: writeLatestSortParam } =
+    useLatestAsyncParam({
+      value: sortParam,
+      write: setSortParam,
+    });
 
   // Parse sorting from URL parameter
   const parseSorting = (sortParam: string | null): SortOrderItem[] => {

@@ -91,8 +91,14 @@ export function buildSqlResultVisualizationCorrectionPrompt(args: {
   responseText: string;
   rows: Record<string, unknown>[];
 }): string {
-  const { aiQueryRequest, databaseEngine, issues, querySql, responseText, rows } =
-    args;
+  const {
+    aiQueryRequest,
+    databaseEngine,
+    issues,
+    querySql,
+    responseText,
+    rows,
+  } = args;
 
   return [
     buildSqlResultVisualizationPrompt({
@@ -241,8 +247,7 @@ function parseSqlResultVisualizationResponse(responseText: string): {
       issues: [
         {
           code: "invalid-data",
-          message:
-            'Chart config must include "data.datasets" as an array.',
+          message: 'Chart config must include "data.datasets" as an array.',
           responseText,
         },
       ],
@@ -274,7 +279,9 @@ function parseSqlResultVisualizationResponse(responseText: string): {
   };
 }
 
-function isSupportedChartType(value: unknown): value is SqlResultVisualizationChartType {
+function isSupportedChartType(
+  value: unknown,
+): value is SqlResultVisualizationChartType {
   return (
     typeof value === "string" &&
     (SUPPORTED_CHART_TYPES as readonly string[]).includes(value)

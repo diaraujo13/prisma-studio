@@ -117,9 +117,13 @@ export function createPGLiteExecutor(
             throw new AbortError();
           }
 
-          const result = await pglite.query(query.sql, query.parameters as never[], {
-            rowMode: "object",
-          });
+          const result = await pglite.query(
+            query.sql,
+            query.parameters as never[],
+            {
+              rowMode: "object",
+            },
+          );
           results.push(result.rows as never);
         }
 

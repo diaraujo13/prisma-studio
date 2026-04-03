@@ -61,13 +61,17 @@ describe("prepareRelease", () => {
     });
 
     expect(release.hasReleaseNotes).toBe(false);
-    expect(release.releaseReason).toBe("version_ahead_of_npm_without_changelog");
+    expect(release.releaseReason).toBe(
+      "version_ahead_of_npm_without_changelog",
+    );
     expect(release.shouldPublishPackage).toBe(true);
     expect(existsSync(releaseNotesPath)).toBe(false);
   });
 
   it("rejects a manual publish when the requested version does not match package.json", () => {
-    const directory = mkdtempSync(join(tmpdir(), "studio-prepare-release-mismatch-"));
+    const directory = mkdtempSync(
+      join(tmpdir(), "studio-prepare-release-mismatch-"),
+    );
     tempDirectories.push(directory);
 
     writeFixtureFiles({

@@ -167,6 +167,7 @@ export interface StudioLocalUiState {
 export interface SqlEditorState {
   aiPromptHistory?: string[];
   id: string;
+  isReadOnly?: boolean;
   queryText?: string;
 }
 
@@ -259,7 +260,9 @@ interface StudioContextValue {
     string | number
   >;
   getOrCreateRowsCollection<T>(key: string, factory: () => T): T;
-  getOrCreateTableQueryExecutionState: (key: string) => TableQueryExecutionState;
+  getOrCreateTableQueryExecutionState: (
+    key: string,
+  ) => TableQueryExecutionState;
 }
 
 /**

@@ -39,7 +39,8 @@ export function useColumnPinning() {
 
   const setPinnedColumnIds = useCallback(
     (nextPinnedColumnIds: string[]) => {
-      const serializedPinnedColumns = serializePinnedColumns(nextPinnedColumnIds);
+      const serializedPinnedColumns =
+        serializePinnedColumns(nextPinnedColumnIds);
       if ((pinParam ?? null) === serializedPinnedColumns) {
         return;
       }
@@ -54,4 +55,3 @@ export function useColumnPinning() {
     setPinnedColumnIds,
   };
 }
-

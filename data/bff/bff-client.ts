@@ -3,7 +3,9 @@ import type { ExecuteOptions, SequenceExecutor } from "../executor";
 import type { Query, QueryResult } from "../query";
 import type { Either } from "../type-utils";
 
-type FetchLike = (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>;
+type FetchLike = (
+  ...args: Parameters<typeof fetch>
+) => ReturnType<typeof fetch>;
 
 const bffRequestDurationByAbortSignal = new WeakMap<AbortSignal, number>();
 
@@ -468,8 +470,8 @@ export function createStudioBFFClient(
           return [deserializeError(error)];
         }
 
-        const deserializedResults = (results ?? []).map((result) =>
-          (resultDeserializerFn?.(result) || result) as never,
+        const deserializedResults = (results ?? []).map(
+          (result) => (resultDeserializerFn?.(result) || result) as never,
         );
 
         return [null, deserializedResults];

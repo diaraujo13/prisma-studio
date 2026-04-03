@@ -1,6 +1,5 @@
 import {
   type Adapter,
-  type AdapterUpdateDetails,
   type AdapterDeleteResult,
   type AdapterError,
   type AdapterInsertResult,
@@ -12,6 +11,7 @@ import {
   type AdapterSqlLintDetails,
   type AdapterSqlLintResult,
   type AdapterSqlSchemaResult,
+  type AdapterUpdateDetails,
   type AdapterUpdateManyResult,
   type AdapterUpdateResult,
   type Column,

@@ -67,7 +67,9 @@ describe("packPackage", () => {
     try {
       const tarballPath = packPackage(directory);
 
-      expect(tarballPath).toBe(join(directory, "release-fixture-dry-run-4.5.6.tgz"));
+      expect(tarballPath).toBe(
+        join(directory, "release-fixture-dry-run-4.5.6.tgz"),
+      );
       expect(existsSync(tarballPath)).toBe(true);
 
       cleanupPackedTarball(tarballPath);
