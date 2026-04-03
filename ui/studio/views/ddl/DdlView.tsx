@@ -130,13 +130,11 @@ export function DdlView(_props: ViewProps) {
     [currentSchemaData],
   );
 
-  const [selectedTableName, setSelectedTableName] = useState<string>(() => {
-    return tableNames[0] ?? "";
-  });
+  const [selectedTableName, setSelectedTableName] = useState<string>("");
 
   // Ensure selectedTableName stays valid when schema changes
   const effectiveTableName =
-    tableNames.includes(selectedTableName) || selectedTableName === ""
+    tableNames.includes(selectedTableName)
       ? selectedTableName
       : (tableNames[0] ?? "");
 
@@ -251,12 +249,10 @@ export function DdlView(_props: ViewProps) {
         {selectedTable && (
           <div className="text-xs text-muted-foreground">
             <span className="font-medium">
-              {selectedTable.columns
-                ? Object.keys(selectedTable.columns).length
-                : 0}
+              {Object.keys(selectedTable.columns).length}
             </span>{" "}
             column
-            {Object.keys(selectedTable.columns ?? {}).length !== 1 ? "s" : ""}
+            {Object.keys(selectedTable.columns).length !== 1 ? "s" : ""}
             {" · "}
             <TooltipProvider delayDuration={200}>
               {Object.values(selectedTable.columns).map((col) => (

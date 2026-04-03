@@ -782,7 +782,7 @@ export function SqlView(_props: ViewProps) {
       return;
     }
 
-    const id = `fav-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const id = crypto.randomUUID();
     sqlFavoritesCollection.insert({
       id,
       name: name.trim(),
