@@ -834,7 +834,7 @@ export function SqlView(_props: ViewProps) {
   );
 
   const readOnlyToggle = (
-    <span className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground select-none">
+    <span className="flex items-center gap-1.5 text-xs text-muted-foreground select-none">
       <Switch
         aria-label="Read-only mode"
         checked={isReadOnly}
