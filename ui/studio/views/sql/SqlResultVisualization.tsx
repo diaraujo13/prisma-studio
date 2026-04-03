@@ -31,9 +31,7 @@ interface SqlResultVisualizationChartProps {
   config: import("chart.js").ChartConfiguration<SqlResultVisualizationChartType>;
 }
 
-export function useSqlResultVisualization(
-  args: UseSqlResultVisualizationArgs,
-) {
+export function useSqlResultVisualization(args: UseSqlResultVisualizationArgs) {
   const {
     requestAiVisualization,
     aiQueryRequest,
@@ -48,7 +46,8 @@ export function useSqlResultVisualization(
     status: "idle",
   });
   const canGenerate =
-    typeof requestAiVisualization === "function" && typeof querySql === "string";
+    typeof requestAiVisualization === "function" &&
+    typeof querySql === "string";
 
   const startVisualizationGeneration = useCallback(async () => {
     if (!requestAiVisualization || !querySql) {
@@ -119,7 +118,13 @@ export function useSqlResultVisualization(
     setState((currentState) => {
       return currentState.status === "idle" ? currentState : { status: "idle" };
     });
-  }, [autoGenerate, canGenerate, querySql, resetKey, startVisualizationGeneration]);
+  }, [
+    autoGenerate,
+    canGenerate,
+    querySql,
+    resetKey,
+    startVisualizationGeneration,
+  ]);
 
   return {
     canGenerate,

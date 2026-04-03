@@ -1,6 +1,4 @@
-import {
-  queryCollectionOptions,
-} from "@tanstack/query-db-collection";
+import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import {
   type Collection,
   createCollection,
@@ -36,12 +34,12 @@ type RowCollection = Collection<RowRecord, string>;
 function writeUpdatedRows(args: {
   activeTable: Table;
   writeUpdate: (row: RowRecord) => void;
-  rows: AdapterUpdateResult["row"][] | AdapterUpdateManyResult["rows"];
+  rows: AdapterUpdateResult["row"][];
 }) {
   const { activeTable, rows, writeUpdate } = args;
 
   for (const row of rows) {
-    writeUpdate(addRowIdToResult({ row }, activeTable).row!);
+    writeUpdate(addRowIdToResult({ row }, activeTable).row);
   }
 }
 
@@ -341,11 +339,13 @@ export function useActiveTableRowsCollection(
 
                 writeUpdatedRows({
                   activeTable,
-                  writeUpdate: (collection as unknown as {
-                    utils: {
-                      writeUpdate: (row: RowRecord) => void;
-                    };
-                  }).utils.writeUpdate,
+                  writeUpdate: (
+                    collection as unknown as {
+                      utils: {
+                        writeUpdate: (row: RowRecord) => void;
+                      };
+                    }
+                  ).utils.writeUpdate,
                   rows: result.rows,
                 });
 
@@ -386,11 +386,13 @@ export function useActiveTableRowsCollection(
 
                 writeUpdatedRows({
                   activeTable,
-                  writeUpdate: (collection as unknown as {
-                    utils: {
-                      writeUpdate: (row: RowRecord) => void;
-                    };
-                  }).utils.writeUpdate,
+                  writeUpdate: (
+                    collection as unknown as {
+                      utils: {
+                        writeUpdate: (row: RowRecord) => void;
+                      };
+                    }
+                  ).utils.writeUpdate,
                   rows: [result.row],
                 });
               }

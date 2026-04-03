@@ -24,6 +24,7 @@ import { createSqlEditorSchemaFromIntrospection } from "../../../../data/sql-edi
 import { getTopLevelSqlStatementAtCursor } from "../../../../data/sql-statements";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
+import { Switch } from "../../../components/ui/switch";
 import { TableHead, TableRow } from "../../../components/ui/table";
 import { useColumnPinning } from "../../../hooks/use-column-pinning";
 import { useIntrospection } from "../../../hooks/use-introspection";
@@ -37,19 +38,18 @@ import { DataGridDraggableHeaderCell } from "../../grid/DataGridDraggableHeaderC
 import { DataGridHeader } from "../../grid/DataGridHeader";
 import { StudioHeader } from "../../StudioHeader";
 import type { ViewProps } from "../View";
+import { resolveAiSqlGeneration } from "./sql-ai-generation";
 import {
   getCodeMirrorDialect,
   toCodeMirrorSqlNamespace,
 } from "./sql-editor-config";
 import { createSqlEditorKeybindings } from "./sql-editor-keybindings";
-import {
-  resolveAiSqlGeneration,
-} from "./sql-ai-generation";
+import { isSqlWriteOperation } from "./sql-guardrails";
+import { createSqlLintSource } from "./sql-lint-source";
 import {
   SqlResultVisualizationChart,
   useSqlResultVisualization,
 } from "./SqlResultVisualization";
-import { createSqlLintSource } from "./sql-lint-source";
 
 interface SqlResultState {
   aiQueryRequest: string | null;
@@ -83,6 +83,7 @@ const DEFAULT_AI_PROMPT_PLACEHOLDER = "Generate SQL with AI ...";
 const MAX_AI_PROMPT_HISTORY_ITEMS = 20;
 const SQL_EDITOR_DRAFT_ID = "sql-editor:draft";
 const SQL_AI_PROMPT_HISTORY_ID = "sql-editor:ai-prompt-history";
+const SQL_READ_ONLY_MODE_ID = "sql-editor:read-only";
 const SQL_EDITOR_STORAGE_KEY = "prisma-studio-sql-editor-state-v1";
 const SQL_EDITOR_PERSIST_DEBOUNCE_MS = 250;
 const SQL_VIEW_GRID_SCOPE = "sql:view:grid";
@@ -283,6 +284,9 @@ export function SqlView(_props: ViewProps) {
   const hasUserEditedEditorValueRef = useRef(false);
   const latestEditorValueRef = useRef(editorValue);
   const [isRunning, setIsRunning] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(() => {
+    return readPersistedIsReadOnly({ sqlEditorStateCollection });
+  });
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiPromptHistory, setAiPromptHistory] = useState<string[]>(
     initialPersistedAiPromptHistory,
@@ -356,7 +360,9 @@ export function SqlView(_props: ViewProps) {
       }
 
       setAiPromptHistory(nextHistory);
-      const existingState = sqlEditorStateCollection.get(SQL_AI_PROMPT_HISTORY_ID);
+      const existingState = sqlEditorStateCollection.get(
+        SQL_AI_PROMPT_HISTORY_ID,
+      );
 
       if (!existingState) {
         sqlEditorStateCollection.insert({
@@ -373,9 +379,28 @@ export function SqlView(_props: ViewProps) {
     [sqlEditorStateCollection],
   );
 
+  const persistIsReadOnly = useCallback(
+    (value: boolean) => {
+      const existingState = sqlEditorStateCollection.get(SQL_READ_ONLY_MODE_ID);
+
+      if (!existingState) {
+        sqlEditorStateCollection.insert({
+          id: SQL_READ_ONLY_MODE_ID,
+          isReadOnly: value,
+        });
+        return;
+      }
+
+      sqlEditorStateCollection.update(SQL_READ_ONLY_MODE_ID, (draft) => {
+        draft.isReadOnly = value;
+      });
+    },
+    [sqlEditorStateCollection],
+  );
+
   const aiPromptHistoryPreview =
     aiPrompt.length === 0 && aiPromptHistoryPreviewIndex != null
-      ? aiPromptHistory[aiPromptHistoryPreviewIndex] ?? null
+      ? (aiPromptHistory[aiPromptHistoryPreviewIndex] ?? null)
       : null;
 
   const materializeAiPromptHistoryPreview = useCallback(() => {
@@ -527,7 +552,9 @@ export function SqlView(_props: ViewProps) {
     ];
   }, [sqlLanguageExtension, sqlLintExtensions]);
   const databaseEngine = useMemo(() => {
-    return getDatabaseEngineName(adapter.capabilities?.sqlDialect ?? "postgresql");
+    return getDatabaseEngineName(
+      adapter.capabilities?.sqlDialect ?? "postgresql",
+    );
   }, [adapter.capabilities?.sqlDialect]);
   const requestAiSqlGeneration = useCallback(
     async (prompt: string) => {
@@ -656,6 +683,14 @@ export function SqlView(_props: ViewProps) {
 
   async function executeSql(args?: { sqlOverride?: string }) {
     const sql = args?.sqlOverride ?? editorValue;
+
+    if (isReadOnly && isSqlWriteOperation(sql.trim())) {
+      setErrorMessage(
+        "Read-only mode is active. Disable it in the toolbar to run write queries.",
+      );
+      return;
+    }
+
     const aiExecutionContext = getPendingAiSqlExecutionContext({
       pendingAiSqlExecution,
       sql,
@@ -755,9 +790,7 @@ export function SqlView(_props: ViewProps) {
       focusSqlEditorAtEnd(generation.sql);
     } catch (error) {
       setAiGenerationErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "AI SQL generation failed.",
+        error instanceof Error ? error.message : "AI SQL generation failed.",
       );
     } finally {
       setIsGeneratingSql(false);
@@ -795,18 +828,38 @@ export function SqlView(_props: ViewProps) {
       size="sm"
       variant={isRunning ? "outline" : "default"}
     >
-      {isRunning ? (
-        <Square className="size-4" />
-      ) : (
-        <Play className="size-4" />
-      )}
+      {isRunning ? <Square className="size-4" /> : <Play className="size-4" />}
       {isRunning ? "Cancel" : "Run SQL"}
     </Button>
   );
 
+  const readOnlyToggle = (
+    <span className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground select-none">
+      <Switch
+        aria-label="Read-only mode"
+        checked={isReadOnly}
+        onCheckedChange={(checked) => {
+          setIsReadOnly(checked);
+          persistIsReadOnly(checked);
+          if (checked) {
+            setErrorMessage(null);
+          }
+        }}
+      />
+      Read-only
+    </span>
+  );
+
+  const headerEndContent = (
+    <>
+      {readOnlyToggle}
+      {runSqlButton}
+    </>
+  );
+
   return (
     <div className="flex flex-1 min-h-0 flex-col h-full overflow-hidden">
-      <StudioHeader endContent={runSqlButton}>
+      <StudioHeader endContent={headerEndContent}>
         {hasAiSql ? (
           <div className="flex min-w-0 grow items-center gap-2">
             <Input
@@ -1024,7 +1077,9 @@ function getPendingAiSqlExecutionContext(args: {
     };
   }
 
-  if (normalizeSqlForAiExecutionContext(pendingAiSqlExecution.sql) !== trimmedSql) {
+  if (
+    normalizeSqlForAiExecutionContext(pendingAiSqlExecution.sql) !== trimmedSql
+  ) {
     return {
       aiQueryRequest: null,
       shouldAutoGenerateVisualization: false,
@@ -1172,12 +1227,29 @@ function readPersistedAiPromptHistory(args: {
   return normalizeAiPromptHistory(historyRow?.aiPromptHistory);
 }
 
+function readPersistedIsReadOnly(args: {
+  sqlEditorStateCollection: ReturnType<
+    typeof useStudio
+  >["sqlEditorStateCollection"];
+}): boolean {
+  const row = readPersistedSqlEditorStateRow({
+    rowId: SQL_READ_ONLY_MODE_ID,
+    sqlEditorStateCollection: args.sqlEditorStateCollection,
+  });
+
+  return row?.isReadOnly === true;
+}
+
 function readPersistedSqlEditorStateRow(args: {
   rowId: string;
   sqlEditorStateCollection: ReturnType<
     typeof useStudio
   >["sqlEditorStateCollection"];
-}): { aiPromptHistory?: unknown; queryText?: unknown } | null {
+}): {
+  aiPromptHistory?: unknown;
+  isReadOnly?: unknown;
+  queryText?: unknown;
+} | null {
   const { rowId, sqlEditorStateCollection } = args;
   const inCollection = sqlEditorStateCollection.get(rowId);
 
@@ -1206,7 +1278,9 @@ function readPersistedSqlEditorStateRow(args: {
       return null;
     }
 
-    const draftRow = (parsedStorageState as Record<string, unknown>)[`s:${rowId}`];
+    const draftRow = (parsedStorageState as Record<string, unknown>)[
+      `s:${rowId}`
+    ];
 
     if (typeof draftRow !== "object" || draftRow == null) {
       return null;
@@ -1218,7 +1292,11 @@ function readPersistedSqlEditorStateRow(args: {
       return null;
     }
 
-    return draftData as { aiPromptHistory?: unknown; queryText?: unknown };
+    return draftData as {
+      aiPromptHistory?: unknown;
+      isReadOnly?: unknown;
+      queryText?: unknown;
+    };
   } catch {
     return null;
   }

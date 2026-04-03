@@ -170,11 +170,13 @@ function createAdapterMock(options?: {
             parameters: [],
             sql: "update-many",
           })),
-          rows: details.updates.map((update: AdapterUpdateManyDetails["updates"][number]) => ({
-            ...update.row,
-            ...update.changes,
-            __ps_updated_at__: new Date().toISOString(),
-          })),
+          rows: details.updates.map(
+            (update: AdapterUpdateManyDetails["updates"][number]) => ({
+              ...update.row,
+              ...update.changes,
+              __ps_updated_at__: new Date().toISOString(),
+            }),
+          ),
         },
       ];
     }),
@@ -497,8 +499,14 @@ describe("useActiveTableRowsCollection", () => {
       await tx.isPersisted.promise;
     });
 
-    expect((adapter as Adapter & { updateMany: ReturnType<typeof vi.fn> }).updateMany).toHaveBeenCalledTimes(1);
-    expect((adapter as Adapter & { updateMany: ReturnType<typeof vi.fn> }).updateMany).toHaveBeenCalledWith(
+    expect(
+      (adapter as Adapter & { updateMany: ReturnType<typeof vi.fn> })
+        .updateMany,
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      (adapter as Adapter & { updateMany: ReturnType<typeof vi.fn> })
+        .updateMany,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         table: createActiveTable(),
         updates: [
@@ -705,15 +713,20 @@ describe("useActiveTableRowsCollection", () => {
       },
     });
 
-    await waitFor(() => (adapter.query as ReturnType<typeof vi.fn>).mock.calls.length === 1);
+    await waitFor(
+      () => (adapter.query as ReturnType<typeof vi.fn>).mock.calls.length === 1,
+    );
 
-    const firstQueryOptions = (adapter.query as ReturnType<typeof vi.fn>).mock.calls[0]?.[1];
+    const firstQueryOptions = (adapter.query as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[1];
 
     rerender({
       sortOrder: [{ column: "name", direction: "desc" }],
     });
 
-    await waitFor(() => (adapter.query as ReturnType<typeof vi.fn>).mock.calls.length === 2);
+    await waitFor(
+      () => (adapter.query as ReturnType<typeof vi.fn>).mock.calls.length === 2,
+    );
 
     expect(firstQueryOptions?.abortSignal).toBeInstanceOf(AbortSignal);
     expect(firstQueryOptions?.abortSignal.aborted).toBe(true);

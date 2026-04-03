@@ -77,7 +77,7 @@ export function isStudioLlmResponse(
     response.ok === false &&
     typeof response.message === "string" &&
     typeof response.code === "string" &&
-    STUDIO_LLM_ERROR_CODES.includes(response.code as StudioLlmErrorCode)
+    STUDIO_LLM_ERROR_CODES.includes(response.code)
   );
 }
 

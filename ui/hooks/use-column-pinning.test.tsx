@@ -75,9 +75,7 @@ describe("useColumnPinning", () => {
 
   it("serializes pinned columns and removes duplicates", () => {
     expect(serializePinnedColumns([])).toBeNull();
-    expect(serializePinnedColumns(["id", "bigint_col"])).toBe(
-      "id,bigint_col",
-    );
+    expect(serializePinnedColumns(["id", "bigint_col"])).toBe("id,bigint_col");
     expect(serializePinnedColumns(["id", "bigint_col", "id", ""])).toBe(
       "id,bigint_col",
     );
@@ -125,4 +123,3 @@ describe("useColumnPinning", () => {
     harness.cleanup();
   });
 });
-

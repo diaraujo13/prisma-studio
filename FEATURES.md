@@ -123,6 +123,13 @@ Keyboard execution supports `Cmd/Ctrl+Enter`, and in multi-statement scripts it 
 Large SQL result sets stay responsive while you keep editing the query because result-grid rendering is isolated from editor keystrokes unless the executed result itself changes.
 Long SQL lines wrap inside the editor instead of stretching the overall page wider, so writing large queries stays readable on narrow viewports.
 
+## SQL Query Panel Read-Only Mode
+
+The SQL toolbar exposes a persistent **Read-only** toggle that prevents any write operation from being dispatched to the database when enabled.
+Statements starting with `INSERT`, `UPDATE`, `DELETE`, `DROP`, `TRUNCATE`, `ALTER`, `CREATE`, `MERGE`, `REPLACE`, or `UPSERT` are detected as write operations; attempting to run them in read-only mode surfaces an inline error message without sending a request.
+`SELECT` queries and other read operations are unaffected by the toggle.
+The toggle state is persisted through the SQL-editor TanStack collection so it survives page navigation and survives browser refresh.
+
 ## AI SQL Generation
 
 Embedders can optionally provide the same async `llm` hook on `Studio`, and the SQL view uses it with a `sql-generation` task to turn natural-language requests into SQL.

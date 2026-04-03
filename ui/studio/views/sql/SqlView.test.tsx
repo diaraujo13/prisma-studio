@@ -221,9 +221,7 @@ function createStudioMock(adapter: Adapter): {
   operationEvents: [];
   queryClient: { clear: ReturnType<typeof vi.fn> };
   requestLlm: ReturnType<
-    typeof vi.fn<
-      (request: { prompt: string; task: string }) => Promise<string>
-    >
+    typeof vi.fn<(request: { prompt: string; task: string }) => Promise<string>>
   >;
   sqlEditorStateCollection: {
     delete: ReturnType<typeof vi.fn>;
@@ -252,8 +250,12 @@ function createStudioMock(adapter: Adapter): {
     get: vi.fn((id: string) => sqlEditorRows.get(id)),
     has: vi.fn((id: string) => sqlEditorRows.has(id)),
     insert: vi.fn(
-      (item: { aiPromptHistory?: string[]; id: string; queryText?: string }) => {
-      sqlEditorRows.set(item.id, item);
+      (item: {
+        aiPromptHistory?: string[];
+        id: string;
+        queryText?: string;
+      }) => {
+        sqlEditorRows.set(item.id, item);
       },
     ),
     update: vi.fn(
@@ -283,7 +285,9 @@ function createStudioMock(adapter: Adapter): {
     get llm() {
       return llm;
     },
-    set llm(value: ((request: StudioLlmRequest) => Promise<string>) | undefined) {
+    set llm(
+      value: ((request: StudioLlmRequest) => Promise<string>) | undefined,
+    ) {
       llm = value;
     },
     getOrCreateRowsCollection: vi.fn(),
@@ -336,7 +340,12 @@ function setInputValue(element: HTMLInputElement, value: string) {
 function dispatchInputKey(
   element: HTMLInputElement,
   key: string,
-  args?: { altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean },
+  args?: {
+    altKey?: boolean;
+    ctrlKey?: boolean;
+    metaKey?: boolean;
+    shiftKey?: boolean;
+  },
 ) {
   element.dispatchEvent(
     new KeyboardEvent("keydown", {
@@ -422,7 +431,9 @@ describe("SqlView", () => {
     }
 
     expect(
-      harness.container.querySelector('input[aria-label="Generate SQL with AI"]'),
+      harness.container.querySelector(
+        'input[aria-label="Generate SQL with AI"]',
+      ),
     ).toBeNull();
     expect(
       [...harness.container.querySelectorAll("button")].find((button) =>
@@ -441,10 +452,14 @@ describe("SqlView", () => {
     });
 
     expect(
-      harness.container.querySelector('[data-testid="sql-result-visualization-action"]'),
+      harness.container.querySelector(
+        '[data-testid="sql-result-visualization-action"]',
+      ),
     ).toBeNull();
     expect(
-      harness.container.querySelector('[data-testid="sql-result-visualization-row"]'),
+      harness.container.querySelector(
+        '[data-testid="sql-result-visualization-row"]',
+      ),
     ).toBeNull();
 
     harness.cleanup();
@@ -468,9 +483,9 @@ describe("SqlView", () => {
     const promptInput = harness.container.querySelector<HTMLInputElement>(
       'input[aria-label="Generate SQL with AI"]',
     );
-    const generateButton = [...harness.container.querySelectorAll("button")].find(
-      (button) => button.textContent?.includes("Generate SQL"),
-    );
+    const generateButton = [
+      ...harness.container.querySelectorAll("button"),
+    ].find((button) => button.textContent?.includes("Generate SQL"));
     const editor = harness.container.querySelector<HTMLTextAreaElement>(
       'textarea[aria-label="SQL editor"]',
     );
@@ -524,7 +539,9 @@ describe("SqlView", () => {
     });
 
     await waitFor(() => {
-      return harness.container.textContent?.includes("1 row(s) returned") ?? false;
+      return (
+        harness.container.textContent?.includes("1 row(s) returned") ?? false
+      );
     });
 
     expect(rawSpy).toHaveBeenCalledWith(
@@ -588,9 +605,9 @@ describe("SqlView", () => {
     const promptInput = harness.container.querySelector<HTMLInputElement>(
       'input[aria-label="Generate SQL with AI"]',
     );
-    const generateButton = [...harness.container.querySelectorAll("button")].find(
-      (button) => button.textContent?.includes("Generate SQL"),
-    );
+    const generateButton = [
+      ...harness.container.querySelectorAll("button"),
+    ].find((button) => button.textContent?.includes("Generate SQL"));
 
     if (!promptInput || !generateButton) {
       throw new Error("Expected SQL generation controls");
@@ -636,7 +653,8 @@ describe("SqlView", () => {
 
     await waitFor(() => {
       return (
-        (harness.container.textContent?.includes("1 row(s) returned") ?? false) &&
+        (harness.container.textContent?.includes("1 row(s) returned") ??
+          false) &&
         harness.container.querySelector(
           '[data-testid="sql-result-visualization-chart"]',
         ) != null
@@ -659,7 +677,9 @@ describe("SqlView", () => {
       JSON.stringify([{ one: 1 }]),
     );
     expect(
-      harness.container.querySelector('[data-testid="sql-result-visualization-action"]'),
+      harness.container.querySelector(
+        '[data-testid="sql-result-visualization-action"]',
+      ),
     ).toBeNull();
 
     harness.cleanup();
@@ -676,7 +696,8 @@ describe("SqlView", () => {
     };
     const { adapter, rawSpy } = createAdapterMock({ raw });
     const studio = createStudioMock(adapter);
-    const llmMock = vi.fn<(request: StudioLlmRequest) => Promise<string>>()
+    const llmMock = vi
+      .fn<(request: StudioLlmRequest) => Promise<string>>()
       .mockResolvedValue(
         JSON.stringify({
           rationale: "Tried a typeof helper.",
@@ -690,9 +711,9 @@ describe("SqlView", () => {
     const promptInput = harness.container.querySelector<HTMLInputElement>(
       'input[aria-label="Generate SQL with AI"]',
     );
-    const generateButton = [...harness.container.querySelectorAll("button")].find(
-      (button) => button.textContent?.includes("Generate SQL"),
-    );
+    const generateButton = [
+      ...harness.container.querySelectorAll("button"),
+    ].find((button) => button.textContent?.includes("Generate SQL"));
     const editor = harness.container.querySelector<HTMLTextAreaElement>(
       'textarea[aria-label="SQL editor"]',
     );
@@ -741,9 +762,7 @@ describe("SqlView", () => {
       { sql: "select typeof(json_col) from public.organizations limit 5" },
       expect.any(Object),
     );
-    expect(harness.container.textContent).toContain(
-      "Tried a typeof helper.",
-    );
+    expect(harness.container.textContent).toContain("Tried a typeof helper.");
 
     harness.cleanup();
   });
@@ -764,9 +783,9 @@ describe("SqlView", () => {
     const promptInput = harness.container.querySelector<HTMLInputElement>(
       'input[aria-label="Generate SQL with AI"]',
     );
-    const generateButton = [...harness.container.querySelectorAll("button")].find(
-      (button) => button.textContent?.includes("Generate SQL"),
-    );
+    const generateButton = [
+      ...harness.container.querySelectorAll("button"),
+    ].find((button) => button.textContent?.includes("Generate SQL"));
 
     if (!promptInput || !generateButton) {
       throw new Error("Expected SQL generation controls");
@@ -782,11 +801,13 @@ describe("SqlView", () => {
 
     await waitFor(() => {
       const promptHistoryRow = (
-        studio.sqlEditorStateCollection.get as (id: string) => {
-          aiPromptHistory?: string[];
-          id: string;
-          queryText?: string;
-        } | undefined
+        studio.sqlEditorStateCollection.get as (id: string) =>
+          | {
+              aiPromptHistory?: string[];
+              id: string;
+              queryText?: string;
+            }
+          | undefined
       )("sql-editor:ai-prompt-history");
 
       return (
@@ -810,11 +831,13 @@ describe("SqlView", () => {
 
     expect(
       (
-        studio.sqlEditorStateCollection.get as (id: string) => {
-          aiPromptHistory?: string[];
-          id: string;
-          queryText?: string;
-        } | undefined
+        studio.sqlEditorStateCollection.get as (id: string) =>
+          | {
+              aiPromptHistory?: string[];
+              id: string;
+              queryText?: string;
+            }
+          | undefined
       )("sql-editor:ai-prompt-history"),
     ).toEqual({
       aiPromptHistory: ["show me team members", "show me organizations"],
@@ -916,9 +939,9 @@ describe("SqlView", () => {
     const promptInput = harness.container.querySelector<HTMLInputElement>(
       'input[aria-label="Generate SQL with AI"]',
     );
-    const generateButton = [...harness.container.querySelectorAll("button")].find(
-      (button) => button.textContent?.includes("Generate SQL"),
-    );
+    const generateButton = [
+      ...harness.container.querySelectorAll("button"),
+    ].find((button) => button.textContent?.includes("Generate SQL"));
 
     if (!promptInput || !generateButton) {
       throw new Error("Expected SQL generation controls");
@@ -934,8 +957,9 @@ describe("SqlView", () => {
 
     await waitFor(() => {
       return (
-        harness.container.textContent?.includes("AI SQL generation exploded.") ??
-        false
+        harness.container.textContent?.includes(
+          "AI SQL generation exploded.",
+        ) ?? false
       );
     });
 
@@ -999,7 +1023,9 @@ describe("SqlView", () => {
     }
 
     expect(
-      harness.container.querySelector('[data-testid="sql-result-visualization-row"]'),
+      harness.container.querySelector(
+        '[data-testid="sql-result-visualization-row"]',
+      ),
     ).toBeNull();
     expect(summary.textContent).toContain("1 row(s) returned in");
     expect(harness.container.textContent?.includes("AI visualization")).toBe(
@@ -1014,9 +1040,7 @@ describe("SqlView", () => {
     expect(visualizeAction.className.includes("border")).toBe(false);
 
     act(() => {
-      visualizeAction.dispatchEvent(
-        new MouseEvent("click", { bubbles: true }),
-      );
+      visualizeAction.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     await waitFor(() => {
@@ -1051,7 +1075,9 @@ describe("SqlView", () => {
     expect(chart?.className).toContain("max-w-[1200px]");
     expect(firstVisualizationPrompt).not.toContain("AI query request:");
     expect(
-      harness.container.querySelector('[data-testid="sql-result-visualization-action"]'),
+      harness.container.querySelector(
+        '[data-testid="sql-result-visualization-action"]',
+      ),
     ).toBeNull();
 
     harness.cleanup();
@@ -1059,7 +1085,14 @@ describe("SqlView", () => {
 
   it("resets the generated chart when another query starts running", async () => {
     const secondQueryDeferred = createDeferred<
-      [null, { query: { parameters: never[]; sql: string }; rowCount: number; rows: { one: number }[] }]
+      [
+        null,
+        {
+          query: { parameters: never[]; sql: string };
+          rowCount: number;
+          rows: { one: number }[];
+        },
+      ]
     >();
     let rawCallCount = 0;
     const raw: Adapter["raw"] = async (details) => {
@@ -1129,9 +1162,7 @@ describe("SqlView", () => {
     }
 
     act(() => {
-      visualizeAction.dispatchEvent(
-        new MouseEvent("click", { bubbles: true }),
-      );
+      visualizeAction.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     await waitFor(() => {
@@ -1507,6 +1538,155 @@ describe("SqlView", () => {
     }
 
     expect(editor.value).toBe("select * from public.organizations limit 7;");
+
+    harness.cleanup();
+  });
+
+  it("renders the read-only mode toggle in the header", () => {
+    const { adapter } = createAdapterMock();
+    const studio = createStudioMock(adapter);
+    useStudioMock.mockReturnValue(studio);
+
+    const harness = renderSqlView();
+
+    const toggle = harness.container.querySelector(
+      'button[aria-label="Read-only mode"]',
+    );
+
+    expect(toggle).toBeTruthy();
+
+    harness.cleanup();
+  });
+
+  it("blocks write SQL with an error when read-only mode is enabled", async () => {
+    const { adapter, rawSpy } = createAdapterMock();
+    const studio = createStudioMock(adapter);
+    studio.sqlEditorStateCollection.get.mockImplementation((id: string) => {
+      if (id === "sql-editor:read-only") {
+        return { id: "sql-editor:read-only", isReadOnly: true };
+      }
+
+      return undefined;
+    });
+    useStudioMock.mockReturnValue(studio);
+
+    const harness = renderSqlView();
+    const editor = harness.container.querySelector<HTMLTextAreaElement>(
+      'textarea[aria-label="SQL editor"]',
+    );
+    const runButton = [...harness.container.querySelectorAll("button")].find(
+      (button) => button.textContent?.includes("Run SQL"),
+    );
+
+    if (!editor || !runButton || !mockCodeMirrorOnChange) {
+      throw new Error("SQL view controls not rendered");
+    }
+
+    act(() => {
+      mockCodeMirrorOnChange?.("DELETE FROM users;");
+    });
+
+    act(() => {
+      runButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await waitFor(() => {
+      return (
+        harness.container.textContent?.includes("Read-only mode is active") ??
+        false
+      );
+    });
+
+    expect(rawSpy).not.toHaveBeenCalled();
+
+    harness.cleanup();
+  });
+
+  it("allows SELECT queries to run in read-only mode", async () => {
+    const { adapter, rawSpy } = createAdapterMock();
+    const studio = createStudioMock(adapter);
+    studio.sqlEditorStateCollection.get.mockImplementation((id: string) => {
+      if (id === "sql-editor:read-only") {
+        return { id: "sql-editor:read-only", isReadOnly: true };
+      }
+
+      return undefined;
+    });
+    useStudioMock.mockReturnValue(studio);
+
+    const harness = renderSqlView();
+    const runButton = [...harness.container.querySelectorAll("button")].find(
+      (button) => button.textContent?.includes("Run SQL"),
+    );
+
+    if (!runButton) {
+      throw new Error("SQL view controls not rendered");
+    }
+
+    act(() => {
+      runButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await waitFor(() => {
+      return (
+        harness.container.textContent?.includes("1 row(s) returned") ?? false
+      );
+    });
+
+    expect(rawSpy).toHaveBeenCalledTimes(1);
+
+    harness.cleanup();
+  });
+
+  it("persists read-only mode toggle state to the editor state collection", async () => {
+    const { adapter } = createAdapterMock();
+    const studio = createStudioMock(adapter);
+    useStudioMock.mockReturnValue(studio);
+
+    const harness = renderSqlView();
+    const toggle = harness.container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Read-only mode"]',
+    );
+
+    if (!toggle) {
+      throw new Error("Read-only toggle not rendered");
+    }
+
+    act(() => {
+      toggle.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    await waitFor(() => {
+      return (
+        studio.sqlEditorStateCollection.insert.mock.calls.some(
+          (args: unknown[]) => {
+            const row = args[0] as
+              | { id: string; isReadOnly?: boolean }
+              | undefined;
+            return row?.id === "sql-editor:read-only";
+          },
+        ) ||
+        studio.sqlEditorStateCollection.update.mock.calls.some(
+          (args: unknown[]) => {
+            return (args[0] as string | undefined) === "sql-editor:read-only";
+          },
+        )
+      );
+    });
+
+    const wasInserted = studio.sqlEditorStateCollection.insert.mock.calls.some(
+      (args: unknown[]) => {
+        const row = args[0] as { id: string; isReadOnly?: boolean } | undefined;
+        return row?.id === "sql-editor:read-only";
+      },
+    );
+    const wasUpdated = studio.sqlEditorStateCollection.update.mock.calls.some(
+      (args: unknown[]) => {
+        return (args[0] as string | undefined) === "sql-editor:read-only";
+      },
+    );
+
+    expect(wasInserted || wasUpdated).toBe(true);
 
     harness.cleanup();
   });

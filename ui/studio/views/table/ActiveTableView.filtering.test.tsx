@@ -164,10 +164,7 @@ vi.mock("../../context", () => ({
     },
     hasAiFilter: typeof studioLlm === "function",
     requestLlm: async (request: { prompt: string; task: string }) => {
-      if (
-        request.task === "table-filter" &&
-        typeof studioLlm === "function"
-      ) {
+      if (request.task === "table-filter" && typeof studioLlm === "function") {
         return await studioLlm(request as StudioLlmRequest);
       }
 
@@ -2389,7 +2386,9 @@ describe("ActiveTableView filtering", () => {
         "text-destructive-foreground",
       );
       expect(dialogButtons[1]?.className).toContain("bg-secondary");
-      expect(dialogButtons[1]?.className).toContain("text-secondary-foreground");
+      expect(dialogButtons[1]?.className).toContain(
+        "text-secondary-foreground",
+      );
       expectConfirmationFocusRing(dialogButtons[0]);
       expect(document.activeElement).toBe(dialogButtons[0]);
 
@@ -2701,7 +2700,9 @@ describe("ActiveTableView filtering", () => {
       expect(dialogButtons[0]?.className).toContain("bg-primary");
       expect(dialogButtons[0]?.className).toContain("text-primary-foreground");
       expect(dialogButtons[1]?.className).toContain("bg-secondary");
-      expect(dialogButtons[1]?.className).toContain("text-secondary-foreground");
+      expect(dialogButtons[1]?.className).toContain(
+        "text-secondary-foreground",
+      );
       expectConfirmationFocusRing(dialogButtons[0]);
       expect(document.activeElement).toBe(dialogButtons[0]);
 

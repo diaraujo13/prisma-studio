@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { AdapterIntrospectResult } from "@/data";
 
 import {
-  buildAiSqlGenerationPrompt,
   buildAiSqlGenerationContext,
+  buildAiSqlGenerationPrompt,
   resolveAiSqlGeneration,
 } from "./sql-ai-generation";
 
@@ -104,9 +104,13 @@ describe("sql-ai-generation", () => {
     });
 
     expect(prompt).toContain("Database engine: PostgreSQL");
-    expect(prompt).toContain("Use only functions, operators, and casts supported by PostgreSQL.");
+    expect(prompt).toContain(
+      "Use only functions, operators, and casts supported by PostgreSQL.",
+    );
     expect(prompt).toContain('"shouldGenerateVisualization":true');
-    expect(prompt).toContain("Decide whether the resulting dataset would make an interesting chart.");
+    expect(prompt).toContain(
+      "Decide whether the resulting dataset would make an interesting chart.",
+    );
   });
 
   it("retries once when the AI response is not valid JSON and then returns parsed SQL", async () => {
@@ -186,7 +190,9 @@ describe("sql-ai-generation", () => {
     });
 
     expect(aiGenerateSql).toHaveBeenCalledTimes(1);
-    expect(result.sql).toBe("select id, name from public.organizations limit 5;");
+    expect(result.sql).toBe(
+      "select id, name from public.organizations limit 5;",
+    );
     expect(result.rationale).toBe("Counts by organization chart well.");
     expect(result.shouldGenerateVisualization).toBe(true);
   });

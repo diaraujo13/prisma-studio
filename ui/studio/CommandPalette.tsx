@@ -164,7 +164,9 @@ function AppearanceCommandItem(props: {
       value={value}
       className={cn(
         "justify-between gap-3",
-        disabled ? "text-muted-foreground/55" : "text-foreground hover:bg-secondary/85",
+        disabled
+          ? "text-muted-foreground/55"
+          : "text-foreground hover:bg-secondary/85",
       )}
     >
       <span className="flex min-w-0 items-center gap-2.5">

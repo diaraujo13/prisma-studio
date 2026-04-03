@@ -65,7 +65,10 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-function createColumn(params: { name: string; pkPosition: number | null }): Column {
+function createColumn(params: {
+  name: string;
+  pkPosition: number | null;
+}): Column {
   const { name, pkPosition } = params;
 
   return {
@@ -231,7 +234,7 @@ describe("useSorting", () => {
   });
 
   it("keeps the latest sort request when an earlier URL write resolves later", async () => {
-    let hashParams = new URLSearchParams();
+    const hashParams = new URLSearchParams();
     let releaseFirstSortWrite: (() => void) | undefined;
     let sortWriteCallCount = 0;
 

@@ -28,8 +28,7 @@ export interface GetInputProps {
 }
 
 export function getInput(props: GetInputProps) {
-  const { cell, column, context, onNavigate, onSubmit, showSaveAction } =
-    props;
+  const { cell, column, context, onNavigate, onSubmit, showSaveAction } = props;
   const { datatype, isAutoincrement, isComputed, nullable } = column;
   const { format, group, isArray, options } = datatype;
 

@@ -9,7 +9,8 @@ export function extractSemver(value) {
   return match?.[1] ?? "";
 }
 
-const parseIdentifier = (value) => (/^[0-9]+$/.test(value) ? Number(value) : value);
+const parseIdentifier = (value) =>
+  /^[0-9]+$/.test(value) ? Number(value) : value;
 
 const comparePrerelease = (a, b) => {
   const aParts = a ? a.split(".") : [];
@@ -60,7 +61,9 @@ export function compareSemver(a, b) {
   const normalizedB = extractSemver(b);
 
   if (!normalizedA || !normalizedB) {
-    throw new Error(`Cannot compare invalid semantic versions: "${a}" and "${b}".`);
+    throw new Error(
+      `Cannot compare invalid semantic versions: "${a}" and "${b}".`,
+    );
   }
 
   const [aCore, aPrerelease = ""] = normalizedA.split("-");
@@ -129,15 +132,22 @@ export function createReleasePlan({
   const normalizedPackageVersion = extractSemver(packageVersion);
 
   if (!normalizedPackageVersion) {
-    throw new Error(`Could not parse package version from package.json: ${packageVersion}`);
+    throw new Error(
+      `Could not parse package version from package.json: ${packageVersion}`,
+    );
   }
 
   const normalizedExpectedVersion = extractSemver(expectedVersion);
   const normalizedNpmVersion = extractSemver(latestNpmVersion);
-  const releaseNotesSection = extractChangelogSection(changelog, normalizedPackageVersion);
-  const hasReleaseNotes = releaseNotesSection !== null && hasSectionBody(releaseNotesSection);
+  const releaseNotesSection = extractChangelogSection(
+    changelog,
+    normalizedPackageVersion,
+  );
+  const hasReleaseNotes =
+    releaseNotesSection !== null && hasSectionBody(releaseNotesSection);
   const requestedVersionMismatch =
-    normalizedExpectedVersion !== "" && normalizedExpectedVersion !== normalizedPackageVersion;
+    normalizedExpectedVersion !== "" &&
+    normalizedExpectedVersion !== normalizedPackageVersion;
   const versionAheadOfNpm =
     !normalizedNpmVersion ||
     compareSemver(normalizedPackageVersion, normalizedNpmVersion) > 0;

@@ -3,7 +3,9 @@ import {
   type StudioLlmRequest,
 } from "../../data/llm";
 
-type FetchLike = (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>;
+type FetchLike = (
+  ...args: Parameters<typeof fetch>
+) => ReturnType<typeof fetch>;
 
 export const ANTHROPIC_DEMO_MODEL = "claude-haiku-4-5-20251001";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";

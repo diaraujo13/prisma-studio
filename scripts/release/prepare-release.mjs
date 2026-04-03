@@ -8,9 +8,13 @@ const readJsonFile = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
 
 const readLatestNpmVersion = (packageName) => {
   try {
-    const output = execFileSync("npm", ["view", packageName, "version", "--json"], {
-      encoding: "utf8",
-    }).trim();
+    const output = execFileSync(
+      "npm",
+      ["view", packageName, "version", "--json"],
+      {
+        encoding: "utf8",
+      },
+    ).trim();
 
     if (!output) {
       return "";
@@ -59,10 +63,13 @@ export function prepareRelease({
   const packageVersion = extractSemver(packageJson.version);
 
   if (!packageVersion) {
-    throw new Error(`Could not parse package version from package.json: ${packageJson.version}`);
+    throw new Error(
+      `Could not parse package version from package.json: ${packageJson.version}`,
+    );
   }
 
-  const resolvedLatestNpmVersion = latestNpmVersion ?? readLatestNpmVersion(packageJson.name);
+  const resolvedLatestNpmVersion =
+    latestNpmVersion ?? readLatestNpmVersion(packageJson.name);
   const releasePlan = createReleasePlan({
     allowMissingChangelog,
     changelog,
@@ -84,7 +91,10 @@ export function prepareRelease({
   };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   const release = prepareRelease();
 
   const summaryLines = [
@@ -100,7 +110,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   writeGitHubOutput("package_name", release.packageName);
   writeGitHubOutput("package_version", release.packageVersion);
   writeGitHubOutput("latest_npm_version", release.latestNpmVersion);
-  writeGitHubOutput("has_release_notes", release.hasReleaseNotes ? "true" : "false");
+  writeGitHubOutput(
+    "has_release_notes",
+    release.hasReleaseNotes ? "true" : "false",
+  );
   writeGitHubOutput("requested_version", release.requestedVersion);
   writeGitHubOutput(
     "should_publish_package",

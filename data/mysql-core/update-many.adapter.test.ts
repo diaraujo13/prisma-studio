@@ -39,7 +39,9 @@ describe("mysql-core/updateMany", () => {
     const executeSequence = vi.fn();
     const executeTransaction = vi.fn(
       async (
-        ..._args: Parameters<NonNullable<SequenceExecutor["executeTransaction"]>>
+        ..._args: Parameters<
+          NonNullable<SequenceExecutor["executeTransaction"]>
+        >
       ) => {
         return [
           null,
@@ -88,7 +90,10 @@ describe("mysql-core/updateMany", () => {
       ])
       .mockResolvedValueOnce([
         [null, [{ affectedRows: 1 }]],
-        [null, [{ animal_id: null, created_at: null, id: 202, role: "member" }]],
+        [
+          null,
+          [{ animal_id: null, created_at: null, id: 202, role: "member" }],
+        ],
       ]);
     const adapter = createMySQLAdapter({
       executor: {
