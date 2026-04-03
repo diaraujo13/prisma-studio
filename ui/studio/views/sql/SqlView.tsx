@@ -8,7 +8,17 @@ import type {
   RowSelectionState,
 } from "@tanstack/react-table";
 import CodeMirror from "@uiw/react-codemirror";
-import { Loader2, Play, Sparkles, Square } from "lucide-react";
+import {
+  BookmarkCheck,
+  BookmarkPlus,
+  ChevronDown,
+  Loader2,
+  Play,
+  Search,
+  Sparkles,
+  Square,
+  Trash2,
+} from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
@@ -23,16 +33,37 @@ import { consumeBffRequestDurationMsForSignal } from "../../../../data/bff";
 import { createSqlEditorSchemaFromIntrospection } from "../../../../data/sql-editor-schema";
 import { getTopLevelSqlStatementAtCursor } from "../../../../data/sql-statements";
 import { Button } from "../../../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
 import { TableHead, TableRow } from "../../../components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../../components/ui/tooltip";
 import { useColumnPinning } from "../../../hooks/use-column-pinning";
 import { useIntrospection } from "../../../hooks/use-introspection";
 import { useNavigation } from "../../../hooks/use-navigation";
 import type { CellProps } from "../../cell/Cell";
 import { Cell } from "../../cell/Cell";
 import { getCell } from "../../cell/get-cell";
-import { useStudio } from "../../context";
+import { type FavoriteSqlQuery, useStudio } from "../../context";
 import { DataGrid, type DataGridProps } from "../../grid/DataGrid";
 import { DataGridDraggableHeaderCell } from "../../grid/DataGridDraggableHeaderCell";
 import { DataGridHeader } from "../../grid/DataGridHeader";
@@ -263,6 +294,8 @@ export function SqlView(_props: ViewProps) {
     onEvent,
     requestLlm,
     sqlEditorStateCollection,
+    sqlFavoritesCollection,
+    favoriteSqlQueries: favorites,
   } = useStudio();
   const { data: introspection } = useIntrospection();
   const { schemaParam } = useNavigation();
@@ -311,6 +344,9 @@ export function SqlView(_props: ViewProps) {
   const [paginationState, setPaginationState] = useState<PaginationState>(
     DEFAULT_PAGINATION_STATE,
   );
+  const [isSaveFavoriteDialogOpen, setIsSaveFavoriteDialogOpen] =
+    useState(false);
+  const [favoriteName, setFavoriteName] = useState("");
   const aiPromptHistoryRef = useRef(aiPromptHistory);
 
   const persistEditorDraft = useCallback(
@@ -739,6 +775,46 @@ export function SqlView(_props: ViewProps) {
     controller.abort();
   }
 
+  function saveAsFavorite(name: string) {
+    const sql = editorValue.trim();
+
+    if (!sql || !name.trim()) {
+      return;
+    }
+
+    const id = `fav-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sqlFavoritesCollection.insert({
+      id,
+      name: name.trim(),
+      sql,
+      createdAt: new Date().toISOString(),
+    });
+    setIsSaveFavoriteDialogOpen(false);
+    setFavoriteName("");
+  }
+
+  function deleteFavorite(id: string) {
+    sqlFavoritesCollection.delete(id);
+  }
+
+  function loadFavorite(favorite: FavoriteSqlQuery) {
+    hasUserEditedEditorValueRef.current = true;
+    latestEditorValueRef.current = favorite.sql;
+    setEditorValue(favorite.sql);
+    focusSqlEditorAtEnd(favorite.sql);
+  }
+
+  function explainCurrentSql() {
+    const currentSql = getSqlForExecutionFromCursor().trim();
+
+    if (!currentSql) {
+      return;
+    }
+
+    const explainSql = `EXPLAIN ANALYZE\n${currentSql}`;
+    void executeSql({ sqlOverride: explainSql });
+  }
+
   async function generateSqlFromPrompt() {
     if (!hasAiSql || isGeneratingSql) {
       return;
@@ -833,6 +909,89 @@ export function SqlView(_props: ViewProps) {
     </Button>
   );
 
+  const explainButton = (
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={explainCurrentSql}
+            disabled={isRunning || editorValue.trim().length === 0}
+            size="sm"
+            variant="outline"
+            aria-label="Explain query"
+          >
+            <Search className="size-4" />
+            Explain
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Run EXPLAIN ANALYZE on the current query
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
+  const favoritesButton = (
+    <TooltipProvider delayDuration={300}>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" aria-label="Favorite queries">
+                <BookmarkCheck className="size-4" />
+                <ChevronDown className="size-3 ml-0.5" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Saved favorite queries</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="end" className="w-72">
+          <DropdownMenuItem
+            onClick={() => {
+              setFavoriteName("");
+              setIsSaveFavoriteDialogOpen(true);
+            }}
+            disabled={editorValue.trim().length === 0}
+          >
+            <BookmarkPlus className="size-4 mr-2" />
+            Save current query as favorite
+          </DropdownMenuItem>
+          {favorites.length > 0 && <DropdownMenuSeparator />}
+          {favorites.map((fav) => (
+            <DropdownMenuItem
+              key={fav.id}
+              className="flex items-center justify-between gap-2 group"
+              onSelect={(e) => {
+                e.preventDefault();
+                loadFavorite(fav);
+              }}
+            >
+              <span className="truncate flex-1 font-mono text-xs">
+                {fav.name}
+              </span>
+              <button
+                className="ml-1 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteFavorite(fav.id);
+                }}
+                aria-label={`Delete favorite: ${fav.name}`}
+                type="button"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </DropdownMenuItem>
+          ))}
+          {favorites.length === 0 && (
+            <div className="px-2 py-3 text-xs text-muted-foreground text-center">
+              No saved favorites yet
+            </div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </TooltipProvider>
+  );
+
   const readOnlyToggle = (
     <span className="flex items-center gap-1.5 text-xs text-muted-foreground select-none">
       <Switch
@@ -853,6 +1012,8 @@ export function SqlView(_props: ViewProps) {
   const headerEndContent = (
     <>
       {readOnlyToggle}
+      {explainButton}
+      {favoritesButton}
       {runSqlButton}
     </>
   );
@@ -1042,6 +1203,50 @@ export function SqlView(_props: ViewProps) {
           />
         )}
       </div>
+
+      <Dialog
+        open={isSaveFavoriteDialogOpen}
+        onOpenChange={(open) => {
+          setIsSaveFavoriteDialogOpen(open);
+          if (!open) {
+            setFavoriteName("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save as Favorite</DialogTitle>
+            <DialogDescription>
+              Give this query a name to save it for quick access later.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            aria-label="Favorite name"
+            placeholder="e.g. Active users last 30 days"
+            value={favoriteName}
+            onChange={(e) => setFavoriteName(e.currentTarget.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                saveAsFavorite(favoriteName);
+              }
+            }}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsSaveFavoriteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={favoriteName.trim().length === 0}
+              onClick={() => saveAsFavorite(favoriteName)}
+            >
+              Save favorite
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -211,6 +211,7 @@ function createDeferred<T>() {
 
 function createStudioMock(adapter: Adapter): {
   adapter: Adapter;
+  favoriteSqlQueries: [];
   getOrCreateRowsCollection: ReturnType<typeof vi.fn>;
   hasAiSql: boolean;
   hasCustomTheme: boolean;
@@ -224,6 +225,13 @@ function createStudioMock(adapter: Adapter): {
     typeof vi.fn<(request: { prompt: string; task: string }) => Promise<string>>
   >;
   sqlEditorStateCollection: {
+    delete: ReturnType<typeof vi.fn>;
+    get: ReturnType<typeof vi.fn>;
+    has: ReturnType<typeof vi.fn>;
+    insert: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+  };
+  sqlFavoritesCollection: {
     delete: ReturnType<typeof vi.fn>;
     get: ReturnType<typeof vi.fn>;
     has: ReturnType<typeof vi.fn>;
@@ -294,6 +302,7 @@ function createStudioMock(adapter: Adapter): {
     get hasAiSql() {
       return typeof llm === "function";
     },
+    favoriteSqlQueries: [] as [],
     hasCustomTheme: false,
     isDarkMode: false,
     isNavigationOpen: true,
@@ -311,6 +320,13 @@ function createStudioMock(adapter: Adapter): {
     tableUiStateCollection: { get: vi.fn() },
     toggleNavigation: vi.fn(),
     sqlEditorStateCollection,
+    sqlFavoritesCollection: {
+      delete: vi.fn(),
+      get: vi.fn(),
+      has: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+    },
     uiLocalStateCollection: {
       delete: vi.fn(),
       get: vi.fn(),

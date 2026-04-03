@@ -232,6 +232,15 @@ export function Navigation({ className }: NavigationProps) {
         </Navigation.Item>
         <Navigation.Item
           asChild
+          isActive={viewParam === "ddl"}
+          className={navigationItemClasses}
+        >
+          <a href={createUrl({ viewParam: "ddl" })} className="w-full">
+            DDL Editor
+          </a>
+        </Navigation.Item>
+        <Navigation.Item
+          asChild
           isActive={viewParam === "console"}
           className={navigationItemClasses}
         >
