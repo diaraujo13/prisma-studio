@@ -222,3 +222,20 @@ Theme values are applied across Studio roots and portal surfaces at runtime, and
 Theme root classes and variables are synchronized before paint, and supported browsers wrap explicit theme changes in a view transition, so switching appearance modes does not flash a partially updated mix of old and new tokens.
 Palette theme toggles stay interactive in browsers that expose the View Transition API, so `Match system theme` can be turned both on and off in place without closing the palette or getting stuck on the system setting.
 Shared buttons, inputs, filter pills, visualizer nodes, confirmation dialogs, staged-cell overlays, grid cells, compact pagination controls, and the Prisma navigation mark resolve readable dark-mode treatment from those theme tokens and assets, so toolbar controls, page pickers, inline filters, schema cards, prompts, staged edits, table values, and the Studio brand chrome stay visible on dark host surfaces.
+
+## DDL Editor
+
+The DDL Editor view (accessible from the sidebar navigation) generates `CREATE TABLE` DDL statements from the live schema introspection for any table in the current schema.
+It shows a syntax-highlighted, read-only view of the table definition including column types, nullability, default values, primary keys, and foreign key constraints.
+A column tooltip layer exposes per-column metadata at a glance, and copy buttons let you capture the DDL for a single table or all tables in the schema at once.
+
+## Favorite SQL Queries
+
+The SQL editor lets users save named queries as favorites for quick retrieval later.
+Clicking the bookmark button in the SQL toolbar opens a dialog to name and save the current query; the same dropdown lists all saved favorites sorted by recency.
+Each favorite shows a delete action on hover, and favorites persist in localStorage so they survive page reloads.
+
+## SQL Query Explain (EXPLAIN ANALYZE)
+
+An "Explain" button in the SQL editor toolbar wraps the current query (or the statement at the cursor) with `EXPLAIN ANALYZE` and runs it immediately.
+The query plan is shown in the standard result grid, making it easy to inspect execution cost and indexes hit without leaving the editor.

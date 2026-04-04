@@ -116,6 +116,7 @@ function createAdapterMock(args?: { raw?: Adapter["raw"] }): {
 function createStudioMock(adapter: Adapter) {
   return {
     adapter,
+    favoriteSqlQueries: [],
     getOrCreateRowsCollection: vi.fn(),
     hasAiSql: false,
     hasCustomTheme: false,
@@ -128,6 +129,13 @@ function createStudioMock(adapter: Adapter) {
       throw new Error("Studio AI is not configured.");
     }),
     sqlEditorStateCollection: {
+      delete: vi.fn(),
+      get: vi.fn(),
+      has: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+    },
+    sqlFavoritesCollection: {
       delete: vi.fn(),
       get: vi.fn(),
       has: vi.fn(),

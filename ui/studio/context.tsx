@@ -44,6 +44,8 @@ const STUDIO_UI_STATE_ID = "studio-ui-state";
 const STUDIO_UI_STORAGE_KEY = "prisma-studio-ui-state-v1";
 const SQL_EDITOR_STATE_ID = "studio-sql-editor-state";
 const SQL_EDITOR_STORAGE_KEY = "prisma-studio-sql-editor-state-v1";
+const SQL_FAVORITES_ID = "studio-sql-favorites";
+const SQL_FAVORITES_STORAGE_KEY = "prisma-studio-sql-favorites-v1";
 const DEFAULT_TABLE_PAGE_SIZE = 25;
 const SYSTEM_THEME_MEDIA_QUERY = "(prefers-color-scheme: dark)";
 const REDUCED_MOTION_MEDIA_QUERY = "(prefers-reduced-motion: reduce)";
@@ -171,6 +173,13 @@ export interface SqlEditorState {
   queryText?: string;
 }
 
+export interface FavoriteSqlQuery {
+  id: string;
+  name: string;
+  sql: string;
+  createdAt: string;
+}
+
 export interface NavigationTableNameState {
   id: string;
   schema: string;
@@ -240,6 +249,7 @@ interface StudioContextValue {
   requestLlm: (request: StudioLlmRequest) => Promise<string>;
   onEvent: (event: StudioEventBase) => void;
   operationEvents: StudioOperationEvent[];
+  favoriteSqlQueries: FavoriteSqlQuery[];
   isNavigationOpen: boolean;
   toggleNavigation: () => void;
   isDarkMode: boolean;
@@ -255,6 +265,7 @@ interface StudioContextValue {
   tableQueryMetaCollection: Collection<TableQueryMetaState, string | number>;
   uiLocalStateCollection: Collection<StudioLocalUiState, string | number>;
   sqlEditorStateCollection: Collection<SqlEditorState, string | number>;
+  sqlFavoritesCollection: Collection<FavoriteSqlQuery, string | number>;
   navigationTableNamesCollection: Collection<
     NavigationTableNameState,
     string | number
@@ -379,6 +390,20 @@ export function StudioContextProvider(props: StudioContextProviderProps) {
       { collectionName: "studio-sql-editor-state" },
     ),
   );
+  const sqlFavoritesCollectionRef = useRef(
+    instrumentTanStackCollectionMutations(
+      createCollection(
+        localStorageCollectionOptions<FavoriteSqlQuery>({
+          id: SQL_FAVORITES_ID,
+          storageKey: SQL_FAVORITES_STORAGE_KEY,
+          getKey(item) {
+            return item.id;
+          },
+        }),
+      ),
+      { collectionName: "studio-sql-favorites" },
+    ),
+  );
   const navigationTableNamesCollectionRef = useRef(
     instrumentTanStackCollectionMutations(
       createCollection(
@@ -401,12 +426,16 @@ export function StudioContextProvider(props: StudioContextProviderProps) {
   const tableQueryMetaCollection = tableQueryMetaCollectionRef.current;
   const uiLocalStateCollection = uiLocalStateCollectionRef.current;
   const sqlEditorStateCollection = sqlEditorStateCollectionRef.current;
+  const sqlFavoritesCollection = sqlFavoritesCollectionRef.current;
   const navigationTableNamesCollection =
     navigationTableNamesCollectionRef.current;
 
   const { data: studioUiRows = [] } = useLiveQuery(studioUiCollection);
   const { data: operationEventsRows = [] } = useLiveQuery(
     operationEventsCollection,
+  );
+  const { data: favoriteSqlQueriesRows = [] } = useLiveQuery(
+    sqlFavoritesCollection,
   );
 
   const studioUiState = normalizeStudioUiState(
@@ -421,6 +450,15 @@ export function StudioContextProvider(props: StudioContextProviderProps) {
           new Date(right.timestamp).getTime(),
       ),
     [operationEventsRows],
+  );
+
+  const favoriteSqlQueries = useMemo(
+    () =>
+      [...(favoriteSqlQueriesRows as FavoriteSqlQuery[])].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      ),
+    [favoriteSqlQueriesRows],
   );
 
   const updateStudioUiState = useCallback(
@@ -792,6 +830,7 @@ export function StudioContextProvider(props: StudioContextProviderProps) {
           requestLlm,
           onEvent,
           operationEvents,
+          favoriteSqlQueries,
           isNavigationOpen: studioUiState.isNavigationOpen,
           toggleNavigation,
           isDarkMode: studioUiState.isDarkMode,
@@ -807,6 +846,7 @@ export function StudioContextProvider(props: StudioContextProviderProps) {
           tableQueryMetaCollection,
           uiLocalStateCollection,
           sqlEditorStateCollection,
+          sqlFavoritesCollection,
           navigationTableNamesCollection,
           getOrCreateRowsCollection,
           getOrCreateTableQueryExecutionState,
